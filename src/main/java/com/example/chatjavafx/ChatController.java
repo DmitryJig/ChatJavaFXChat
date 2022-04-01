@@ -17,7 +17,7 @@ public class ChatController {
     private void checkButtonClick(ActionEvent actionEvent) {
         String text = messageField.getText();
         if (text.length() > 0) {
-            messageArea.appendText(messageField.getText() + "\n");
+            messageArea.appendText("- " + messageField.getText() + "\n");
             messageField.setText("");
         }
     }
