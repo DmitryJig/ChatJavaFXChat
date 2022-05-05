@@ -11,11 +11,23 @@ public class ChatClient {
     private Socket socket;
     private DataInputStream in;
     private DataOutputStream out;
+    private Thread timerThread; // сделал поток для отслеживания времени ввода логина и пароля
 
     private Controller controller;
 
     public ChatClient(Controller controller) {
         this.controller = controller;
+        timerThread = new Thread(() -> {
+            try {
+                Thread.sleep(120000);
+                System.out.println("Время для аутентификации вышло");
+                Platform.exit();
+                sendMessage(Command.END);
+            } catch (InterruptedException e) {
+                System.out.println("Авторизация прошла в срок");
+            }
+        });
+        timerThread.start();
     }
 
     public void openConnection() throws IOException {
@@ -74,7 +86,7 @@ public class ChatClient {
                     Platform.runLater(() -> controller.showError(params));
                     continue;
                 }
-                if (command == Command.CLIENTS){
+                if (command == Command.CLIENTS) {
                     controller.updateClientList(params);
                     continue;
                 }
@@ -91,12 +103,13 @@ public class ChatClient {
                 final Command command = Command.getCommand(msgAuth);
                 final String[] params = command.parse(msgAuth);
                 if (command == Command.AUTHOK) {
+                    timerThread.interrupt();        // Прерываем таймер при успешной аутентификации
                     final String nick = params[0];
                     controller.setAuth(true);
                     controller.addMessage("Успешная авторизация под ником " + nick);
                     break;
                 }
-                if (command == Command.ERROR){
+                if (command == Command.ERROR) {
                     Platform.runLater(() -> controller.showError(params));
                 }
             }

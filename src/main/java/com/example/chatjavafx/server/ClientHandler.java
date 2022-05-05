@@ -44,7 +44,7 @@ public class ClientHandler {
 
                 String msg = in.readUTF();
                 System.out.println("Получено сообщение: " + msg);
-                if(Command.isCommand(msg)) {
+                if (Command.isCommand(msg)) {
                     final Command command = Command.getCommand(msg);
                     final String[] params = command.parse(msg);
 
@@ -68,12 +68,11 @@ public class ClientHandler {
     }
 
     private void autenticate() {
-        while (true) {
-            try {
+        try {
+            while (true) {
+
                 final String str = in.readUTF(); // /auth login1 pass1
-
                 if (Command.isCommand(str)) {
-
                     Command command = Command.getCommand(str);
                     String[] params = command.parse(str);
                     if (command == Command.AUTH) {
@@ -97,10 +96,9 @@ public class ClientHandler {
                         }
                     }
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
-
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
