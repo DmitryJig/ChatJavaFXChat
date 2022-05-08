@@ -11,15 +11,15 @@ import java.util.Map;
 public class ChatServer {
 
     private final Map<String, ClientHandler> clients;
+    private final AuthService authService;
 
     public ChatServer() {
-
+        authService = new DbAuthService();
         this.clients = new HashMap<>();
     }
 
     public void run() {
-        try (ServerSocket serverSocket = new ServerSocket(8189);
-             AuthService authService = new InMemoryAuthService()) {
+        try (ServerSocket serverSocket = new ServerSocket(8189)) {
             while (true) {
                 System.out.println("Ожидаем подключения клиента");
                 final Socket socket = serverSocket.accept();
@@ -28,11 +28,14 @@ public class ChatServer {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            authService.close();
         }
     }
 
     public boolean isNickBusy(String nick) {
-
         return clients.containsKey(nick);
     }
 
@@ -51,7 +54,7 @@ public class ChatServer {
         clients.values().forEach(client -> client.sendMessage(message));
 
     }
-    private void broadcastClientList() {
+    public synchronized void broadcastClientList() {
         StringBuilder nicks = new StringBuilder();
         for (ClientHandler value : clients.values()){
             nicks.append(value.getNick()).append(" ");

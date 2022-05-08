@@ -38,6 +38,10 @@
                 <TextField fx:id="textField" promptText="Enter your message" HBox.hgrow="ALWAYS"/>
                 <Button fx:id="sendButton" defaultButton="true" onAction="#sendButtonClick" text="Отправить"/>
             </HBox>
+            <HBox>
+                <TextField fx:id="newNickTextField" promptText="Enter new nick" HBox.hgrow="ALWAYS"/>
+                <Button fx:id="changeNickButton" defaultButton="true" onAction="#changeNickButtonClick" text="Сменить ник"/>
+            </HBox>
         </VBox>
         <ListView fx:id="clientList" minWidth="200" maxWidth="200" onMouseClicked="#selectClient"/>
     </HBox>

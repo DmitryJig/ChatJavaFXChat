@@ -19,6 +19,8 @@ public class Controller {
     @FXML
     public ListView<String> clientList;
     @FXML
+    public TextField newNickTextField;
+    @FXML
     private TextField loginField;
     @FXML
     private HBox loginBox;
@@ -102,5 +104,12 @@ public class Controller {
     public void updateClientList(String[] params) {
         clientList.getItems().clear();
         clientList.getItems().addAll(params);
+    }
+
+    public void changeNickButtonClick(ActionEvent actionEvent) {
+        String newNick = newNickTextField.getText().trim();
+        if(!newNick.isEmpty()){
+            client.sendMessage(Command.CHANGE_NICK, newNick);
+        }
     }
 }
