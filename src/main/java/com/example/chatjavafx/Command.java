@@ -1,5 +1,6 @@
 package com.example.chatjavafx;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -42,18 +43,27 @@ public enum Command {
             return new String[]{errorMsg};
         }
     },
+
+    CHANGE_NICK("/change_nick"){ // /error сщщбщение об ошибке
+        @Override
+        public String[] parse(String commandText) {
+            String newNick = commandText.split(COMMAND_DELIMITER, 2)[1];
+            return new String[]{newNick};
+        }
+    },
+
     CLIENTS("/clients"){
         @Override
         public String[] parse(String commandText) {
             final String[] split = commandText.split(COMMAND_DELIMITER);
 
-//            return Arrays.stream(split).skip(1).toArray(String[]::new);
+            return Arrays.stream(split).skip(1).toArray(String[]::new);
 
-            final String[] nicks = new String[split.length - 1];
-            for (int i = 1; i < split.length; i++) {
-                nicks[i - 1] = split[i];
-            }
-            return nicks;
+//            final String[] nicks = new String[split.length - 1];
+//            for (int i = 1; i < split.length; i++) {
+//                nicks[i - 1] = split[i];
+//            }
+//            return nicks;
         }
     };
 

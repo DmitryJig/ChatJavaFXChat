@@ -7,8 +7,9 @@ public interface AuthService extends Closeable {
 
     String getNickByLoginAndPassword(String login, String password);
 
-    void run();
+    boolean changeNick(String oldNick, String newNick);
 
-    @Override
-    void close() throws IOException;
+    void run() throws Exception;
+
+    void close();
 }

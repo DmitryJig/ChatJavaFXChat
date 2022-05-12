@@ -56,6 +56,15 @@ public class ClientHandler {
                         server.sendMessageToClient(this, params[0], params[1]);
                         continue;
                     }
+                    if (command ==Command.CHANGE_NICK){
+                        String newNick = params[0];
+                        if (authService.changeNick(nick, newNick)){
+                            server.unsubscribe(this);
+                            this.nick = newNick;
+                            server.subscribe(this);
+                        }
+                        continue;
+                    }
                 }
                 System.out.println("Получено сообщение от " + nick + " " + msg);
                 server.broadcast(nick + " " + msg);
@@ -116,8 +125,8 @@ public class ClientHandler {
     }
 
     private void closeConnection() {
-        sendMessage(Command.END);
-
+//        sendMessage(Command.END);
+        authService.close();
         try {
             if (in != null) {
                 in.close();
