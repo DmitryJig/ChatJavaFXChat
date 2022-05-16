@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ChatServer {
@@ -51,12 +52,16 @@ public class ChatServer {
 
     public void broadcast(String message) {
 
-        clients.values().forEach(client -> client.sendMessage(message));
-
+        clients.values().forEach(client ->
+        {
+            client.sendMessage(message);
+            client.getLogger().write(message);
+        });
     }
+
     public synchronized void broadcastClientList() {
         StringBuilder nicks = new StringBuilder();
-        for (ClientHandler value : clients.values()){
+        for (ClientHandler value : clients.values()) {
             nicks.append(value.getNick()).append(" ");
         }
         broadcast(Command.CLIENTS, nicks.toString().trim());
@@ -71,9 +76,11 @@ public class ChatServer {
     public void sendMessageToClient(ClientHandler sender, String to, String message) {
 
         final ClientHandler receiver = clients.get(to);
-        if (receiver != null){
+        if (receiver != null) {
             receiver.sendMessage("от " + sender.getNick() + ": " + message);
+            receiver.getLogger().write("от " + sender.getNick() + ": " + message);
             sender.sendMessage("участнику " + to + ": " + message);
+            sender.getLogger().write("участнику " + to + ": " + message);
         } else {
             sender.sendMessage(Command.ERROR, "Участника с ником " + to + " нет в чате!");
         }
