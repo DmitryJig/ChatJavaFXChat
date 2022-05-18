@@ -32,6 +32,7 @@ public class ChatClient {
 
     public void openConnection() throws IOException {
         socket = new Socket("localhost", 8189);
+
         in = new DataInputStream(socket.getInputStream());
         out = new DataOutputStream(socket.getOutputStream());
         final Thread readThread = new Thread(() -> {

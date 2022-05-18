@@ -1,6 +1,8 @@
 package com.example.chatjavafx.server;
 
 import com.example.chatjavafx.Command;
+import com.example.chatjavafx.logger.ChatLogger;
+import com.example.chatjavafx.logger.LoggerImpl;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -14,6 +16,7 @@ public class ClientHandler {
     private final DataInputStream in;
     private final DataOutputStream out;
     private AuthService authService;
+    private ChatLogger logger;
 
     public ClientHandler(Socket socket, ChatServer server, AuthService authService) {
         try {
@@ -54,6 +57,7 @@ public class ClientHandler {
                     if (command == Command.PRIVATE_MESSAGE) {
 
                         server.sendMessageToClient(this, params[0], params[1]);
+//                        logger.write(nick + " приватно для " + params[1] + " " + msg);
                         continue;
                     }
                     if (command ==Command.CHANGE_NICK){
@@ -67,6 +71,7 @@ public class ClientHandler {
                     }
                 }
                 System.out.println("Получено сообщение от " + nick + " " + msg);
+//                logger.write(nick + " " + msg);
                 server.broadcast(nick + " " + msg);
             }
         } catch (IOException e) {
@@ -96,9 +101,11 @@ public class ClientHandler {
                                 continue;
                             }
                             sendMessage(Command.AUTHOK, nick); // /authok nick1
+                            logger = new LoggerImpl(login);
                             this.nick = nick;
                             server.broadcast("Пользователь " + nick + " вошел в чат");
                             server.subscribe(this);
+                            sendMessage(logger.readLast100Lines());
                             break;
                         } else {
                             sendMessage(Command.ERROR, "Неверные логин и пароль");
@@ -125,6 +132,7 @@ public class ClientHandler {
     }
 
     private void closeConnection() {
+        logger.close();
 //        sendMessage(Command.END);
         authService.close();
         try {
@@ -153,5 +161,9 @@ public class ClientHandler {
 
     public String getNick() {
         return nick;
+    }
+
+    public ChatLogger getLogger(){
+        return logger;
     }
 }
