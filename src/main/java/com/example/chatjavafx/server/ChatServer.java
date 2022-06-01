@@ -6,8 +6,9 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ChatServer {
 
@@ -20,12 +21,13 @@ public class ChatServer {
     }
 
     public void run() {
+        ExecutorService serverExecutorService = Executors.newCachedThreadPool();
         try (ServerSocket serverSocket = new ServerSocket(8189)) {
             while (true) {
                 System.out.println("Ожидаем подключения клиента");
                 final Socket socket = serverSocket.accept();
                 System.out.println("Клиент подключился");
-                new ClientHandler(socket, this, authService);
+                new ClientHandler(socket, this, authService, serverExecutorService);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -33,6 +35,7 @@ public class ChatServer {
             e.printStackTrace();
         } finally {
             authService.close();
+            serverExecutorService.shutdownNow();
         }
     }
 

@@ -8,6 +8,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
 
 public class ClientHandler {
     private final Socket socket;
@@ -18,7 +19,7 @@ public class ClientHandler {
     private AuthService authService;
     private ChatLogger logger;
 
-    public ClientHandler(Socket socket, ChatServer server, AuthService authService) {
+    public ClientHandler(Socket socket, ChatServer server, AuthService authService, ExecutorService executorService) {
         try {
             this.nick = "";
             this.socket = socket;
@@ -27,14 +28,14 @@ public class ClientHandler {
             this.in = new DataInputStream(socket.getInputStream());
             this.out = new DataOutputStream(socket.getOutputStream());
 
-            new Thread(() -> {
+            executorService.execute(() -> {
                 try {
                     autenticate();
                     readMessage();
                 } finally {
                     closeConnection();
                 }
-            }).start();
+            });
         } catch (IOException e) {
             throw new RuntimeException("Ошибка создания подключения клиента", e);
         }
@@ -60,9 +61,9 @@ public class ClientHandler {
 //                        logger.write(nick + " приватно для " + params[1] + " " + msg);
                         continue;
                     }
-                    if (command ==Command.CHANGE_NICK){
+                    if (command == Command.CHANGE_NICK) {
                         String newNick = params[0];
-                        if (authService.changeNick(nick, newNick)){
+                        if (authService.changeNick(nick, newNick)) {
                             server.unsubscribe(this);
                             this.nick = newNick;
                             server.subscribe(this);
@@ -163,7 +164,7 @@ public class ClientHandler {
         return nick;
     }
 
-    public ChatLogger getLogger(){
+    public ChatLogger getLogger() {
         return logger;
     }
 }
