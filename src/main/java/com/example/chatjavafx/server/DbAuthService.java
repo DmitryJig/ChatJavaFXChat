@@ -1,10 +1,14 @@
 package com.example.chatjavafx.server;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.sql.*;
 
 public class DbAuthService implements AuthService {
 
     private Connection connection;
+    private final Logger log4jLogger = LogManager.getLogger(DbAuthService.class);
 
     public DbAuthService() {
         run();
@@ -35,7 +39,8 @@ public class DbAuthService implements AuthService {
                 return rs.getString("nick");
             }
         } catch (SQLException e) {
-            System.out.println("Ошибка поиска пользователя в базе данных");
+            log4jLogger.warn("Ошибка поиска пользователя в базе данных");
+//            System.out.println("Ошибка поиска пользователя в базе данных");
             e.printStackTrace();
         }
         return null;
@@ -45,9 +50,11 @@ public class DbAuthService implements AuthService {
     public void run() {
         try {
             this.connection = DriverManager.getConnection("jdbc:sqlite:users.db");
-            System.out.println("Сервис аутентификации запущен, соединение с базой данных установлено");
+            log4jLogger.info("Сервис аутентификации запущен, соединение с базой данных установлено");
+//            System.out.println("Сервис аутентификации запущен, соединение с базой данных установлено");
         } catch (SQLException e) {
-            throw new RuntimeException("Ошибка подключения к базе данных", e);
+            log4jLogger.warn("Ошибка подключения к базе данных {}", e.getMessage());
+//            throw new RuntimeException("Ошибка подключения к базе данных", e);
         }
     }
 
@@ -56,9 +63,11 @@ public class DbAuthService implements AuthService {
         try {
             if (connection != null) {
                 connection.close();
-                System.out.println("Сервис аутентификации успешно остановлен");
+                log4jLogger.info("Сервис аутентификации успешно остановлен");
+//                System.out.println("Сервис аутентификации успешно остановлен");
             }
         } catch (SQLException e) {
+            log4jLogger.warn("Ошибка закрытия соединения с базой данных");
             throw new RuntimeException("Ошибка закрытия соединения с базой данных");
         }
     }
@@ -70,7 +79,8 @@ public class DbAuthService implements AuthService {
             ps.setString(2, oldNick);
             ps.executeUpdate();
         } catch (SQLException throwables) {
-            System.out.println("Ошибка смены ника в БД, возможно ник занят");
+            log4jLogger.warn("Ошибка смены ника в БД, возможно ник занят");
+//            System.out.println("Ошибка смены ника в БД, возможно ник занят");
             return false;
         }
         return true;
@@ -102,7 +112,6 @@ public class DbAuthService implements AuthService {
         try (PreparedStatement ps = connection.prepareStatement("DROP TABLE IF EXISTS " + tableName + ";")) {
             ps.executeUpdate();
         }
-
     }
 
     /**

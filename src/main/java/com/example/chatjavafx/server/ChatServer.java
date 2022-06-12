@@ -10,10 +10,14 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class ChatServer {
 
     private final Map<String, ClientHandler> clients;
     private final AuthService authService;
+    private final Logger log4jLogger = LogManager.getLogger(ChatServer.class);
 
     public ChatServer() {
         authService = new DbAuthService();
@@ -24,15 +28,19 @@ public class ChatServer {
         ExecutorService serverExecutorService = Executors.newCachedThreadPool();
         try (ServerSocket serverSocket = new ServerSocket(8189)) {
             while (true) {
-                System.out.println("Ожидаем подключения клиента");
+                log4jLogger.info("Ожидаем подключения клиента");
+//                System.out.println("Ожидаем подключения клиента");
                 final Socket socket = serverSocket.accept();
-                System.out.println("Клиент подключился");
-                new ClientHandler(socket, this, authService, serverExecutorService);
+                log4jLogger.info("Клиент подключился");
+//                System.out.println("Клиент подключился");
+                new ClientHandler(socket, this, authService, serverExecutorService, log4jLogger);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log4jLogger.warn(() -> e.getMessage());
+//            e.printStackTrace();
         } catch (Exception e) {
-            e.printStackTrace();
+            log4jLogger.warn(() -> e.getMessage());
+//            e.printStackTrace();
         } finally {
             authService.close();
             serverExecutorService.shutdownNow();

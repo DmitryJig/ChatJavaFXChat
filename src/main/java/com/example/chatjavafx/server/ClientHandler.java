@@ -3,6 +3,7 @@ package com.example.chatjavafx.server;
 import com.example.chatjavafx.Command;
 import com.example.chatjavafx.logger.ChatLogger;
 import com.example.chatjavafx.logger.LoggerImpl;
+import org.apache.logging.log4j.Logger;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -18,8 +19,9 @@ public class ClientHandler {
     private final DataOutputStream out;
     private AuthService authService;
     private ChatLogger logger;
+    private Logger log4jLogger;
 
-    public ClientHandler(Socket socket, ChatServer server, AuthService authService, ExecutorService executorService) {
+    public ClientHandler(Socket socket, ChatServer server, AuthService authService, ExecutorService executorService, Logger log4jLogger) {
         try {
             this.nick = "";
             this.socket = socket;
@@ -27,6 +29,7 @@ public class ClientHandler {
             this.authService = authService;
             this.in = new DataInputStream(socket.getInputStream());
             this.out = new DataOutputStream(socket.getOutputStream());
+            this.log4jLogger = log4jLogger;
 
             executorService.execute(() -> {
                 try {
@@ -37,6 +40,7 @@ public class ClientHandler {
                 }
             });
         } catch (IOException e) {
+            log4jLogger.warn("Ошибка создания подключения клиента {}", e.getMessage());
             throw new RuntimeException("Ошибка создания подключения клиента", e);
         }
     }
@@ -47,7 +51,8 @@ public class ClientHandler {
             while (true) {
 
                 String msg = in.readUTF();
-                System.out.println("Получено сообщение: " + msg);
+                log4jLogger.info("Получено сообщение: {}", msg);
+//                System.out.println("Получено сообщение: " + msg);
                 if (Command.isCommand(msg)) {
                     final Command command = Command.getCommand(msg);
                     final String[] params = command.parse(msg);
@@ -71,12 +76,14 @@ public class ClientHandler {
                         continue;
                     }
                 }
-                System.out.println("Получено сообщение от " + nick + " " + msg);
+                log4jLogger.info("Получено сообщение от {} {}", nick, msg);
+//                System.out.println("Получено сообщение от " + nick + " " + msg);
 //                logger.write(nick + " " + msg);
                 server.broadcast(nick + " " + msg);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log4jLogger.warn(() -> e.getMessage());
+//            e.printStackTrace();
         }
 
 
@@ -91,7 +98,8 @@ public class ClientHandler {
                     Command command = Command.getCommand(str);
                     String[] params = command.parse(str);
                     if (command == Command.AUTH) {
-                        System.out.println("is Auth");
+                        log4jLogger.info("is Auth");
+//                        System.out.println("is Auth");
                         final String login = params[0];
                         final String password = params[1];
 
@@ -125,9 +133,11 @@ public class ClientHandler {
 
     public void sendMessage(String message) {
         try {
-            System.out.println("Отправляю сообщение: " + message);
+            log4jLogger.info("Отправляю сообщение: {}", message);
+//            System.out.println("Отправляю сообщение: " + message);
             out.writeUTF(message);
         } catch (IOException e) {
+
             e.printStackTrace();
         }
     }
